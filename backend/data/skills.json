@@ -1,0 +1,114 @@
+{
+  "categories": {
+    "programming_languages": [
+      "JavaScript",
+      "TypeScript",
+      "Python",
+      "Java",
+      "C++",
+      "C#",
+      "Go",
+      "Rust",
+      "Ruby",
+      "PHP",
+      "Swift",
+      "Kotlin",
+      "Scala",
+      "R",
+      "MATLAB"
+    ],
+    "web_technologies": [
+      "HTML",
+      "CSS",
+      "React",
+      "Vue.js",
+      "Angular",
+      "Next.js",
+      "Node.js",
+      "Express.js",
+      "Django",
+      "Flask",
+      "FastAPI",
+      "Spring Boot",
+      "ASP.NET",
+      "REST API",
+      "GraphQL"
+    ],
+    "databases": [
+      "PostgreSQL",
+      "MySQL",
+      "MongoDB",
+      "Redis",
+      "SQLite",
+      "Oracle",
+      "SQL Server",
+      "Cassandra",
+      "Elasticsearch",
+      "DynamoDB"
+    ],
+    "cloud_platforms": [
+      "AWS",
+      "Azure",
+      "Google Cloud",
+      "Docker",
+      "Kubernetes",
+      "Terraform",
+      "CI/CD",
+      "Jenkins",
+      "GitHub Actions",
+      "GitLab CI"
+    ],
+    "data_science": [
+      "Machine Learning",
+      "Deep Learning",
+      "TensorFlow",
+      "PyTorch",
+      "Pandas",
+      "NumPy",
+      "Scikit-learn",
+      "Data Analysis",
+      "Data Visualization",
+      "Jupyter"
+    ],
+    "devops_tools": [
+      "Git",
+      "Linux",
+      "Bash",
+      "Shell Scripting",
+      "Ansible",
+      "Chef",
+      "Puppet",
+      "Monitoring",
+      "Logging",
+      "APM"
+    ],
+    "testing": [
+      "Unit Testing",
+      "Integration Testing",
+      "Jest",
+      "Pytest",
+      "Selenium",
+      "Cypress",
+      "Test Automation",
+      "TDD",
+      "BDD"
+    ],
+    "mobile": [
+      "React Native",
+      "Flutter",
+      "iOS Development",
+      "Android Development",
+      "Mobile App Development"
+    ],
+    "other": [
+      "Microservices",
+      "System Design",
+      "Agile",
+      "Scrum",
+      "Project Management",
+      "Code Review",
+      "Pair Programming"
+    ]
+  }
+}
+
