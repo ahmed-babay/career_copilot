@@ -1,6 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import analyzeRoutes from './routes/analyze.js';
+import compareRoutes from './routes/compare.js';
+import learnRoutes from './routes/learn.js';
+import planRoutes from './routes/plan.js';
 
 // Load environment variables
 dotenv.config();
@@ -13,8 +17,27 @@ app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
+// Routes
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Career Copilot API is running' });
+});
+
+app.use('/analyze', analyzeRoutes);
+app.use('/compare', compareRoutes);
+app.use('/learn', learnRoutes);
+app.use('/plan', planRoutes);
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal server error'
+  });
 });
 
 // Start server
