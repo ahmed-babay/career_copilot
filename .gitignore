@@ -40,3 +40,5 @@ Thumbs.db
 backend/uploads/
 backend/temp/
 
+backend/package-lock.json
+backend/test*
