@@ -66,85 +66,45 @@ export function segmentText(text, maxChunkSize = 100, overlap = 20) {
 
   const chunks = new Set(); 
 
-  // Strategy 1: Split by common delimiters (commas, semicolons, newlines, dashes, bullets)
-  const parts = text.split(/([,\n;|•\-\t]+)/);
+  // Simple approach: Split by all common delimiters (commas, semicolons, newlines, dashes, bullets, tabs)
+  // This creates the smallest possible chunks
+  const parts = text.split(/[,;\n|•\-\t]/);
   
   for (const part of parts) {
     const trimmed = part.trim();
-    // Skip empty parts and delimiter-only parts
-    if (trimmed.length === 0 || /^[,\n;|•\-\t\s]+$/.test(trimmed)) continue;
     
-    if (trimmed.length <= maxChunkSize) {
-      // Small enough, add as-is
-      chunks.add(trimmed);
-    } else {
-      // Too long, split by sentences
-      const sentences = trimmed.split(/([.!?]\s+)/).filter(s => s.trim().length > 0);
+    // Skip empty parts
+    if (trimmed.length === 0) continue;
+    
+    // If still too long, split by spaces to get individual words/phrases
+    if (trimmed.length > maxChunkSize) {
+      // Split by spaces for very long parts
+      const words = trimmed.split(/\s+/);
       let currentChunk = '';
-
-      for (const sentence of sentences) {
-        const sentenceTrimmed = sentence.trim();
-        if (sentenceTrimmed.length === 0) continue;
-        
-        if (currentChunk.length + sentenceTrimmed.length <= maxChunkSize) {
-          currentChunk += (currentChunk ? ' ' : '') + sentenceTrimmed;
+      
+      for (const word of words) {
+        if (currentChunk.length + word.length + 1 <= maxChunkSize) {
+          currentChunk += (currentChunk ? ' ' : '') + word;
         } else {
           if (currentChunk) {
-            chunks.add(currentChunk);
+            chunks.add(currentChunk.trim());
           }
-          // If single sentence is too long, create sliding windows for it
-          if (sentenceTrimmed.length > maxChunkSize) {
-            for (let i = 0; i <= sentenceTrimmed.length - maxChunkSize; i += maxChunkSize - overlap) {
-              const window = sentenceTrimmed.substring(i, i + maxChunkSize).trim();
-              if (window.length > 20) {
-                chunks.add(window);
-              }
-            }
-            // Add the last part if it wasn't covered
-            const remaining = sentenceTrimmed.length % (maxChunkSize - overlap);
-            if (remaining > 20) {
-              const lastPart = sentenceTrimmed.substring(sentenceTrimmed.length - remaining).trim();
-              chunks.add(lastPart);
-            }
-            currentChunk = '';
-          } else {
-            currentChunk = sentenceTrimmed;
-          }
+          currentChunk = word;
         }
       }
       if (currentChunk) {
-        chunks.add(currentChunk);
+        chunks.add(currentChunk.trim());
       }
-    }
-  }
-
-  // Strategy 2: Also extract complete sentences for context (but only if not already captured)
-  // This helps catch skills mentioned in full sentences that might have been split
-  const allSentences = text.split(/([.!?]\s+)/).filter(s => {
-    const trimmed = s.trim();
-    return trimmed.length > 10 && trimmed.length <= maxChunkSize;
-  });
-  
-  for (const sentence of allSentences) {
-    const trimmed = sentence.trim();
-    // Only add if it's not already captured as a smaller chunk
-    // Check if this sentence is already represented by existing chunks
-    const alreadyCaptured = Array.from(chunks).some(chunk => 
-      trimmed.includes(chunk) || chunk.includes(trimmed)
-    );
-    if (!alreadyCaptured && trimmed.length > 10) {
+    } else {
+      // Small enough, add as-is
       chunks.add(trimmed);
     }
   }
 
-  // Convert Set to Array, filter, and sort by length (shorter first for better focus)
+  // Convert Set to Array, filter out very short chunks, and sort
   const result = Array.from(chunks)
-    .filter(chunk => {
-      const trimmed = chunk.trim();
-      return trimmed.length >= 5 && trimmed.length <= maxChunkSize * 2; // Allow slightly larger chunks
-    })
-    .map(chunk => chunk.trim())
-    .sort((a, b) => a.length - b.length); // Shorter chunks first
+    .filter(chunk => chunk.trim().length >= 3) // Minimum 3 characters
+    .map(chunk => chunk.trim());
 
   // If no chunks were created, return the whole text (for very short texts)
   if (result.length === 0) {
@@ -261,7 +221,13 @@ export async function extractSkillsFromText(text, threshold = 0.5, maxChunkSize 
   const matchedSkills = Array.from(skillScores.values());
   matchedSkills.sort((a, b) => b.similarity - a.similarity);
 
-  return matchedSkills;
+  // Return skills and chunks for debugging
+  return {
+    skills: matchedSkills,
+    chunks: chunks, // Include chunks for debugging
+    chunksCount: chunks.length,
+    candidateSkillsCount: candidateSkills.length,
+  };
 }
 
 /**
