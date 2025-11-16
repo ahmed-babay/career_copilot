@@ -10,8 +10,11 @@ import { extractSkillsFromText } from './skillExtractor.js';
  */
 export async function compareSkills(cvText, jdText, threshold = 0.5, matchThreshold = 0.6) {
   // Extract skills from both CV and job description
-  const cvSkills = await extractSkillsFromText(cvText, threshold);
-  const jdSkills = await extractSkillsFromText(jdText, threshold);
+  const cvResult = await extractSkillsFromText(cvText, threshold);
+  const jdResult = await extractSkillsFromText(jdText, threshold);
+  
+  const cvSkills = cvResult.skills || cvResult;
+  const jdSkills = jdResult.skills || jdResult;
 
   // Create maps for easier lookup
   const cvSkillsMap = new Map();
@@ -92,6 +95,12 @@ export async function compareSkills(cvText, jdText, threshold = 0.5, matchThresh
       matchPercentage: jdSkills.length > 0 
         ? parseFloat(((matched.length / jdSkills.length) * 100).toFixed(2))
         : 0,
+    },
+    debug: {
+      cvChunks: cvResult.chunks || [],
+      cvChunksCount: cvResult.chunksCount || 0,
+      jdChunks: jdResult.chunks || [],
+      jdChunksCount: jdResult.chunksCount || 0,
     },
   };
 }

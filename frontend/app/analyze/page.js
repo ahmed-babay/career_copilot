@@ -37,15 +37,38 @@ export default function AnalyzePage() {
 
     try {
       // Step 1: Analyze CV
+      console.log('📄 Analyzing CV...');
       const cvAnalysis = await analyzeCV(cvText, cvFile);
       
+      // Log CV chunks
+      if (cvAnalysis.chunks) {
+        console.log(`\n📝 CV segmented into ${cvAnalysis.chunksCount} chunks:`);
+        cvAnalysis.chunks.forEach((chunk, index) => {
+          console.log(`   CV Chunk ${index + 1} (${chunk.length} chars): "${chunk.substring(0, 100)}${chunk.length > 100 ? '...' : ''}"`);
+        });
+      }
+      
       // Step 2: Compare skills
+      console.log('\n🔍 Comparing skills with job description...');
       const comparison = await compareSkills(
         cvAnalysis.text,
         jdText,
         0.5, // threshold
         0.6  // matchThreshold
       );
+      
+      // Log JD chunks
+      if (comparison.debug && comparison.debug.jdChunks) {
+        console.log(`\n📝 Job Description segmented into ${comparison.debug.jdChunksCount} chunks:`);
+        comparison.debug.jdChunks.forEach((chunk, index) => {
+          console.log(`   JD Chunk ${index + 1} (${chunk.length} chars): "${chunk.substring(0, 100)}${chunk.length > 100 ? '...' : ''}"`);
+        });
+      }
+      
+      console.log('\n✅ Analysis complete!');
+      console.log(`   Matched: ${comparison.summary.totalMatched}`);
+      console.log(`   Missing: ${comparison.summary.totalMissing}`);
+      console.log(`   Nice to Have: ${comparison.summary.totalNiceToHave}`);
 
       // Step 3: Get tutorials for missing skills
       const missingSkills = comparison.missing.map(s => s.skill);
@@ -190,6 +213,7 @@ export default function AnalyzePage() {
                           category={skill.category}
                           similarity={skill.similarity}
                           showSimilarity={true}
+                          variant="matched"
                         />
                       ))}
                     </div>
@@ -210,6 +234,7 @@ export default function AnalyzePage() {
                           category={skill.category}
                           similarity={skill.jdSimilarity}
                           showSimilarity={true}
+                          variant="missing"
                         />
                       ))}
                     </div>
@@ -251,7 +276,7 @@ export default function AnalyzePage() {
                 {/* Nice to Have Skills */}
                 {results.comparison.niceToHave.length > 0 && (
                   <div className="bg-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-                    <h3 className="text-lg font-semibold mb-3 text-blue-400">
+                    <h3 className="text-lg font-semibold mb-3 text-slate-300">
                       💡 Nice to Have Skills ({results.comparison.niceToHave.length})
                     </h3>
                     <div className="flex flex-wrap gap-2">
@@ -262,6 +287,7 @@ export default function AnalyzePage() {
                           category={skill.category}
                           similarity={skill.similarity}
                           showSimilarity={true}
+                          variant="niceToHave"
                         />
                       ))}
                     </div>

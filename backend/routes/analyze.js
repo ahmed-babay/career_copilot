@@ -20,7 +20,8 @@ router.post('/upload', upload.single('cv'), async (req, res, next) => {
     const cleanedText = cleanText(rawText);
 
     // Extract skills from the text
-    const skills = await extractSkillsFromText(cleanedText, threshold);
+    const result = await extractSkillsFromText(cleanedText, threshold);
+    const skills = result.skills || result; // Handle both old and new format
 
     res.json({
       success: true,
@@ -29,6 +30,8 @@ router.post('/upload', upload.single('cv'), async (req, res, next) => {
       textLength: cleanedText.length,
       skills: skills,
       skillsCount: skills.length,
+      chunks: result.chunks || [], // Include chunks for debugging
+      chunksCount: result.chunksCount || 0,
     });
   } catch (error) {
     next(error);
@@ -48,7 +51,8 @@ router.post('/text', async (req, res, next) => {
     const cleanedText = cleanText(text);
     
     // Extract skills from the text
-    const skills = await extractSkillsFromText(cleanedText, similarityThreshold);
+    const result = await extractSkillsFromText(cleanedText, similarityThreshold);
+    const skills = result.skills || result; // Handle both old and new format
     
     res.json({
       success: true,
@@ -56,6 +60,8 @@ router.post('/text', async (req, res, next) => {
       textLength: cleanedText.length,
       skills: skills,
       skillsCount: skills.length,
+      chunks: result.chunks || [], // Include chunks for debugging
+      chunksCount: result.chunksCount || 0,
     });
   } catch (error) {
     next(error);
