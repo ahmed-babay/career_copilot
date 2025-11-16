@@ -8,6 +8,7 @@ Runs locally.
 
 ![Landing](docs/main.png)
 ![Analyze](docs/analyze.png)
+These are the skills extracted by the Model from my CV.
 ![Results](docs/skills-cv.png)
 ![Plan](docs/plan.png)
 
