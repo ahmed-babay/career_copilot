@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { analyzeCV, compareSkills, getTutorialsForSkills } from '@/lib/api';
 import SkillBadge from '@/components/SkillBadge';
 
+// LocalStorage key used by /plan
+const PLAN_KEY = 'learningPlan';
+
 export default function AnalyzePage() {
   const [cvText, setCvText] = useState('');
   const [cvFile, setCvFile] = useState(null);
@@ -11,6 +14,7 @@ export default function AnalyzePage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [savingSkill, setSavingSkill] = useState('');
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -18,6 +22,51 @@ export default function AnalyzePage() {
       setCvFile(file);
       setCvText(''); // Clear text input when file is selected
     }
+  };
+
+  // Load current plan from localStorage
+  const readPlan = () => {
+    try {
+      const raw = window.localStorage.getItem(PLAN_KEY);
+      if (!raw) return { skills: [] };
+      const parsed = JSON.parse(raw);
+      return { skills: Array.isArray(parsed.skills) ? parsed.skills : [] };
+    } catch {
+      return { skills: [] };
+    }
+  };
+
+  // Save plan to localStorage
+  const writePlan = (plan) => {
+    window.localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+  };
+
+  // Save all videos for a single missing skill to plan (dedup by videoId)
+  const saveSkillVideosToPlan = (skillName, category, videos) => {
+    setSavingSkill(skillName);
+    try {
+      const plan = readPlan();
+      const idx = plan.skills.findIndex((s) => s.skill === skillName);
+      if (idx === -1) {
+        plan.skills.push({ skill: skillName, category, videos: [...videos] });
+      } else {
+        const existing = plan.skills[idx];
+        const existingIds = new Set((existing.videos || []).map((v) => v.videoId));
+        const merged = [...(existing.videos || [])];
+        for (const v of videos) {
+          if (!existingIds.has(v.videoId)) merged.push(v);
+        }
+        plan.skills[idx] = { ...existing, videos: merged };
+      }
+      writePlan(plan);
+    } finally {
+      setSavingSkill('');
+    }
+  };
+
+  // Save single video under a skill
+  const saveSingleVideoToPlan = (skillName, category, video) => {
+    saveSkillVideosToPlan(skillName, category, [video]);
   };
 
   const handleAnalyze = async () => {
@@ -185,7 +234,7 @@ export default function AnalyzePage() {
                       <div className="text-sm text-slate-300">Missing</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-400">
+                      <div className="text-3xl font-bold text-slate-300">
                         {results.comparison.summary.totalNiceToHave}
                       </div>
                       <div className="text-sm text-slate-300">Nice to Have</div>
@@ -243,26 +292,51 @@ export default function AnalyzePage() {
                     {Object.keys(results.tutorials).length > 0 && (
                       <div className="mt-4">
                         <h4 className="font-semibold mb-3 text-white">📚 Recommended Tutorials</h4>
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                           {Object.entries(results.tutorials).map(([skill, videos]) => (
                             <div key={skill} className="border-l-4 border-blue-500 pl-4">
-                              <h5 className="font-medium mb-2 text-white">{skill}</h5>
+                              <div className="flex items-center justify-between mb-2">
+                                <h5 className="font-medium text-white">{skill}</h5>
+                                <button
+                                  onClick={() => saveSkillVideosToPlan(
+                                    skill,
+                                    // find category from comparison list fallback 'other'
+                                    (results.comparison.missing.find(s => s.skill === skill)?.category) || 'other',
+                                    videos
+                                  )}
+                                  disabled={savingSkill === skill}
+                                  className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 disabled:bg-slate-700"
+                                >
+                                  {savingSkill === skill ? 'Saving...' : 'Save All to Plan'}
+                                </button>
+                              </div>
                               <div className="space-y-2">
                                 {videos.map((video) => (
+                                  <div key={video.videoId} className="flex items-start gap-2">
                                     <a
-                                    key={video.videoId}
-                                    href={video.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="block p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors"
-                                  >
-                                    <div className="text-sm font-medium text-blue-400">
-                                      {video.title}
-                                    </div>
-                                    <div className="text-xs text-slate-400">
-                                      {video.channelTitle}
-                                    </div>
-                                  </a>
+                                      href={video.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex-1 p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors"
+                                    >
+                                      <div className="text-sm font-medium text-blue-400">
+                                        {video.title}
+                                      </div>
+                                      <div className="text-xs text-slate-400">
+                                        {video.channelTitle}
+                                      </div>
+                                    </a>
+                                    <button
+                                      onClick={() => saveSingleVideoToPlan(
+                                        skill,
+                                        (results.comparison.missing.find(s => s.skill === skill)?.category) || 'other',
+                                        video
+                                      )}
+                                      className="text-xs bg-emerald-600 text-white px-2 py-1 rounded-md hover:bg-emerald-700"
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
                                 ))}
                               </div>
                             </div>
