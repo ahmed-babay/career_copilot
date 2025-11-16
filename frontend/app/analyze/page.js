@@ -305,7 +305,7 @@ export default function AnalyzePage() {
                                     videos
                                   )}
                                   disabled={savingSkill === skill}
-                                  className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 disabled:bg-slate-700"
+                                  className="text-sm bg-indigo-600 text-white px-3 py-1 rounded-md border border-indigo-500/40 hover:bg-indigo-700 disabled:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
                                 >
                                   {savingSkill === skill ? 'Saving...' : 'Save All to Plan'}
                                 </button>
@@ -332,7 +332,7 @@ export default function AnalyzePage() {
                                         (results.comparison.missing.find(s => s.skill === skill)?.category) || 'other',
                                         video
                                       )}
-                                      className="text-xs bg-emerald-600 text-white px-2 py-1 rounded-md hover:bg-emerald-700"
+                                      className="text-xs bg-emerald-700 text-white px-2 py-1 rounded-md border border-emerald-600/40 hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600/40"
                                     >
                                       Save
                                     </button>
