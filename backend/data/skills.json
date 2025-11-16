@@ -32,7 +32,8 @@
       "Spring Boot",
       "ASP.NET",
       "REST API",
-      "GraphQL"
+      "GraphQL",
+      "SOAP"
     ],
     "databases": [
       "PostgreSQL",
