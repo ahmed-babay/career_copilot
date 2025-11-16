@@ -42,3 +42,5 @@ backend/temp/
 
 backend/package-lock.json
 backend/test*
+
+frontend/package-lock.json
